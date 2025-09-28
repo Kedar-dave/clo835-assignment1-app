@@ -1,4 +1,5 @@
 name: Build and push to ECR
+
 on:
   push:
     branches: [ "master" ]
@@ -21,7 +22,6 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build and push web image
@@ -30,12 +30,12 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/clo835-webapp:latest
+          tags: ${{ secrets.ECR_WEB_URI }}:latest
 
-      - name: Build and push mysql image
+      - name: Build and push MySQL image
         uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile_mysql
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/clo835-mysql:latest
+          tags: ${{ secrets.ECR_MYSQL_URI }}:latest
