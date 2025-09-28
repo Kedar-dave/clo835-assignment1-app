@@ -1,53 +1,42 @@
-name: Build and Push to ECR
+name: Build and push to ECR
 
 on:
   push:
-    branches: ["main"]
-
-permissions:
-  contents: read
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout repo
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Configure AWS credentials with session token
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: us-east-1
 
-      # 3. Login to ECR
-      - name: Login to Amazon ECR
+      - name: Login to ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # 4. Debug ECR URIs
-      - name: Debug ECR URIs
+      - name: Build & push webapp
         run: |
-          echo "Web URI: ${{ secrets.ECR_WEBAPP_URI }}"
-          echo "MySQL URI: ${{ secrets.ECR_MYSQL_URI }}"
-
-      # 5. Build and push web image
-      - name: Build and push web image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ secrets.ECR_WEBAPP_URI }}:latest
-
-      - name: Build and push mysql image
-        uses: docker/build-push-action@v4
-        with:
-            context: .
-            file: ./Dockerfile_mysql
-            push: true
-            tags: ${{ secrets.ECR_MYSQL_URI }}:latest
+          WEB_URI=${{ secrets.ECR_WEB_URI }}
+          docker build -t webapp:latest .
+          docker tag webapp:latest ${WEB_URI}:latest
+          docker push ${WEB_URI}:latest
+      - name: Push mysql (official image re-tag)
+        run: |
+          MYSQL_URI=${{ secrets.ECR_MYSQL_URI }}
+          docker pull mysql:8.0
+          docker tag mysql:8.0 ${MYSQL_URI}:latest
+          docker push ${MYSQL_URI}:latest
