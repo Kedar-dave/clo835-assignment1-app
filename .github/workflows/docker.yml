@@ -42,13 +42,12 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.ECR_WEBAPP_URI }}
+          tags: ${{ secrets.ECR_WEBAPP_URI }}:latest
 
-      # 6. Build and push MySQL image
-      - name: Build and push MySQL image
+      - name: Build and push mysql image
         uses: docker/build-push-action@v4
         with:
-          context: .
-          file: ./Dockerfile_mysql
-          push: true
-          tags: ${{ secrets.ECR_MYSQL_URI }}
+            context: .
+            file: ./Dockerfile_mysql
+            push: true
+            tags: ${{ secrets.ECR_MYSQL_URI }}:latest
