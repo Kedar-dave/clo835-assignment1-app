@@ -1,5 +1,5 @@
-cat > .github/workflows/ci-ecr.yml <<'EOF'
 name: Build and push to ECR
+
 on:
   push:
     branches: [ "master" ]
@@ -39,5 +39,4 @@ jobs:
           context: .
           file: ./Dockerfile_mysql
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/clo835-mysql:latest
-EOF
+          tags: ${{ steps.login-ecr.outputs.r
